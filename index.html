@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Hub Live</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1877f2, #42b72a);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #1877f2;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #65676b;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .status-box {
+            background-color: #f0f2f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e4e6eb;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #65676b;
+        }
+        
+        .status-value {
+            color: #1877f2;
+            font-weight: 500;
+        }
+        
+        .refresh-timer {
+            background-color: #e7f3ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .timer-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #1877f2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .timer-text {
+            font-size: 16px;
+            color: #1877f2;
+        }
+        
+        .iframe-container {
+            margin: 20px 0;
+            border: 1px solid #e4e6eb;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 400px;
+            position: relative;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .error-message {
+            background-color: #ffe6e6;
+            color: #d32f2f;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            flex: 1;
+            min-width: 200px;
+            margin: 10px;
+            padding: 15px;
+            background-color: #f0f2f5;
+            border-radius: 8px;
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #1877f2;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .feature-desc {
+            font-size: 14px;
+            color: #65676b;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #1877f2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #166fe5;
+        }
+        
+        .btn-secondary {
+            background-color: #42b72a;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #36a420;
+        }
+        
+        .btn-tertiary {
+            background-color: #ff6b00;
+            color: white;
+        }
+        
+        .btn-tertiary:hover {
+            background-color: #e55d00;
+        }
+        
+        .btn-quaternary {
+            background-color: #8e44ad;
+            color: white;
+        }
+        
+        .btn-quaternary:hover {
+            background-color: #7d3c98;
+        }
+        
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1877f2;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #1877f2;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .device-brands {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .brand-tag {
+            background-color: #1877f2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .scroll-indicator {
+            background-color: #ff6b00;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .links-indicator {
+            background-color: #8e44ad;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .links-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .link-item {
+            background-color: #f0f2f5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .link-item.active {
+            background-color: #1877f2;
+            color: white;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .features {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Best Movie List</h1>
+        <p class="subtitle">Hollywood, Bollywood, Netfix </p>
+        
+        <div class="status-box">
+            <div class="status-item">
+                <span class="status-label">Operating System:</span>
+                <span class="status-value" id="os-info">Detecting...</span>
+            </div>
+<iframe src="https://ad2bitcoin.com/ad.php?ref=Noor25p&width=300" marginwidth="0" marginheight="0" width="300" height="250" scrolling="no" border="0" frameborder="0"></iframe>            
+            <div class="status-item">
+                <span class="status-label">Original User Agent:</span>
+                <span class="status-value" id="original-ua">Detecting...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Simulated User Agent:</span>
+                <span class="status-value" id="simulated-ua">Facebook Mobile App</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Current Device:</span>
+                <span class="status-value" id="current-device">Detecting...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Traffic Source:</span>
+                <span class="status-value">Facebook</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Current Link:</span>
+                <span class="status-value" id="current-link">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Auto-Scroll Status:</span>
+                <span class="status-value" id="scroll-status">Active</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>Note:</strong> Android (Linux-based) is allowed. Only desktop Linux is restricted.</p>
+            <div class="device-brands">
+                <span class="brand-tag">Samsung</span>
+                <span class="brand-tag">Google</span>
+                <span class="brand-tag">OnePlus</span>
+                <span class="brand-tag">Sony</span>
+                <span class="brand-tag">LG</span>
+                <span class="brand-tag">Motorola</span>
+                <span class="brand-tag">Vivo</span>
+                <span class="brand-tag">Xiaomi</span>
+                <span class="brand-tag">Realme</span>
+            </div>
+            <div class="scroll-indicator">Auto-Scroll: <span id="scroll-direction">Down</span></div>
+            <div class="links-indicator">Link Rotation: <span id="link-rotation">Active</span></div>
+        </div>
+        
+        <div class="links-container">
+            <div class="link-item" id="link-1">Movie Link 1:</div>
+            <div class="link-item" id="link-2">Movie Link 2:</div>
+            <div class="link-item" id="link-3">Movie Link 3:</div>
+        </div>
+        
+        <div class="error-message" id="error-message">
+            <h3>Access Restricted</h3>
+            <p>Your user agent does not have permission and you will not be able to visit the website.</p>
+            <p style="margin-top: 10px;"><strong>Detected:</strong> Desktop Linux OS</p>
+        </div>
+        
+        <div class="refresh-timer">
+            <div class="timer-circle" id="timer">10</div>
+            <div class="timer-text">Next automatic refresh in <span id="seconds">10</span> seconds (Link will change)</div>
+        </div>
+        
+        <div class="iframe-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading content with Facebook user agent...</p>
+            </div>
+            <iframe id="content-frame" src=""></iframe>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="refresh-btn">Refresh Now</button>
+            <button class="btn btn-secondary" id="toggle-timer">Pause Timer</button>
+            <button class="btn btn-tertiary" id="toggle-scroll">Pause Auto-Scroll</button>
+            <button class="btn btn-quaternary" id="next-link">Next Link</button>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🔗</div>
+                <div class="feature-title">Multiple Links Rotation</div>
+                <div class="feature-desc">Automatically cycles through 3 different links with each refresh</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔄</div>
+                <div class="feature-title">Automatic Refresh</div>
+                <div class="feature-desc">Refreshes the content automatically every 10 seconds</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">👤</div>
+                <div class="feature-title">User Agent Management</div>
+                <div class="feature-desc">Applies Facebook user agent for all requests</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📜</div>
+                <div class="feature-title">Auto-Scroll</div>
+                <div class="feature-desc">Automatically scrolls the page to simulate user activity</div>
+            </div>
+        </div>
+        
+        <!-- Dummy content to make scrolling more noticeable -->
+        <div style="height: 800px; margin-top: 30px; padding: 20px; background: linear-gradient(to bottom, #f0f2f5, #e4e6eb); border-radius: 8px;">
+            <h3 style="color: #1877f2; margin-bottom: 15px;">Simulated Content Area</h3>
+            <p style="color: #65676b; margin-bottom: 15px;">This area provides additional scrollable content to demonstrate the auto-scroll feature.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h4 style="color: #1877f2; margin-bottom: 10px;">Multiple Links</h4>
+                    <p style="color: #65676b; font-size: 14px;">Automatically rotates through 3 different links with each refresh.</p>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h4 style="color: #1877f2; margin-bottom: 10px;">Automatic Refresh</h4>
+                    <p style="color: #65676b; font-size: 14px;">10-second automatic refresh to simulate continuous traffic.</p>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h4 style="color: #1877f2; margin-bottom: 10px;">User Agent Control</h4>
+                    <p style="color: #65676b; font-size: 14px;">Facebook user agent simulation with device rotation.</p>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h4 style="color: #1877f2; margin-bottom: 10px;">Auto-Scroll</h4>
+                    <p style="color: #65676b; font-size: 14px;">Automatically scrolls to mimic real user behavior.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Multiple target URLs for rotation
+        const targetUrls = [
+            'https://www.revenuecpmgate.com/tyq31umg?key=efe18e07caace1a6cf7a1c3803bddac6',
+            'https://www.revenuecpmgate.com/yh7r8d8e?key=633cc7316db838a939baa93925eb9c08',
+            'https://www.revenuecpmgate.com/fpfdkv8f?key=de1e099086b82049f0113ee6545a9fc1'
+        ];
+        
+        // URL display names
+        const urlNames = [
+            'Movie link 1 ',
+            'Movie link 2 ',
+            'Movie link 3 '
+        ];
+        
+        // Android device models for random selection
+        const androidDevices = [
+            // Samsung devices
+            { model: 'SM-G973F', name: 'Samsung Galaxy S10' },
+            { model: 'SM-G981B', name: 'Samsung Galaxy S20' },
+            { model: 'SM-N986B', name: 'Samsung Galaxy Note 20' },
+            
+            // Google Pixel devices
+            { model: 'Pixel 4', name: 'Google Pixel 4' },
+            { model: 'Pixel 5', name: 'Google Pixel 5' },
+            { model: 'Pixel 6', name: 'Google Pixel 6' },
+            
+            // OnePlus devices
+            { model: 'OnePlus 8', name: 'OnePlus 8' },
+            { model: 'OnePlus 9', name: 'OnePlus 9' },
+            { model: 'OnePlus 10', name: 'OnePlus 10' },
+            
+            // Sony devices
+            { model: 'XQ-AT51', name: 'Sony Xperia 1 II' },
+            { model: 'XQ-BC72', name: 'Sony Xperia 5 III' },
+            
+            // LG devices
+            { model: 'LM-G820', name: 'LG Velvet' },
+            { model: 'LM-V600', name: 'LG Wing' },
+            
+            // Motorola devices
+            { model: 'Moto G Power', name: 'Motorola Moto G Power' },
+            { model: 'Moto G Stylus', name: 'Motorola Moto G Stylus' },
+            
+            // Vivo devices
+            { model: 'Vivo 1915', name: 'Vivo V17' },
+            { model: 'Vivo 2015', name: 'Vivo V20' },
+            { model: 'Vivo 2026', name: 'Vivo V21' },
+            { model: 'Vivo 2105', name: 'Vivo Y72 5G' },
+            { model: 'Vivo 2111', name: 'Vivo Y21' },
+            
+            // Xiaomi devices
+            { model: 'M2007J3SY', name: 'Xiaomi Mi 10T Pro' },
+            { model: 'M2010J19SG', name: 'Xiaomi Poco M3' },
+            { model: 'M2101K7AG', name: 'Xiaomi Redmi Note 10' },
+            { model: 'M2102J20SG', name: 'Xiaomi 11T Pro' },
+            { model: 'M2103K19G', name: 'Xiaomi Redmi Note 10S' },
+            
+            // Realme devices
+            { model: 'RMX2151', name: 'Realme 7' },
+            { model: 'RMX2170', name: 'Realme 7 Pro' },
+            { model: 'RMX3201', name: 'Realme 8' },
+            { model: 'RMX3301', name: 'Realme GT 2 Pro' },
+            { model: 'RMX3363', name: 'Realme GT Master Edition' }
+        ];
+        
+        // Android versions
+        const androidVersions = ['10', '11', '12'];
+        
+        // Chrome versions
+        const chromeVersions = ['91.0.4472.114', '92.0.4515.115', '93.0.4577.82', '94.0.4606.61'];
+        
+        // Facebook app versions
+        const fbVersions = ['321.0.0.35.119', '322.0.0.40.120', '323.0.0.45.121'];
+        
+        // Current user agent setting
+        let currentUserAgent = '';
+        let currentDevice = '';
+        let currentLinkIndex = 0;
+        let isTimerActive = true;
+        let isScrollActive = true;
+        let countdown = 10;
+        let timerInterval;
+        let scrollInterval;
+        let scrollDirection = 1; // 1 for down, -1 for up
+        let scrollPosition = 0;
+
+        // Generate random Android Facebook user agent
+        function generateFacebookUserAgent() {
+            const device = androidDevices[Math.floor(Math.random() * androidDevices.length)];
+            const androidVersion = androidVersions[Math.floor(Math.random() * androidVersions.length)];
+            const chromeVersion = chromeVersions[Math.floor(Math.random() * chromeVersions.length)];
+            const fbVersion = fbVersions[Math.floor(Math.random() * fbVersions.length)];
+            
+            currentDevice = device.name;
+            
+            return `Mozilla/5.0 (Linux; Android ${androidVersion}; ${device.model}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/${fbVersion};]`;
+        }
+        
+        // Get current target URL
+        function getCurrentUrl() {
+            return targetUrls[currentLinkIndex];
+        }
+        
+        // Get current URL name
+        function getCurrentUrlName() {
+            return urlNames[currentLinkIndex];
+        }
+        
+        // Move to the next link
+        function nextLink() {
+            currentLinkIndex = (currentLinkIndex + 1) % targetUrls.length;
+            updateLinkIndicators();
+            document.getElementById('current-link').textContent = getCurrentUrlName();
+        }
+        
+        // Update link indicators in the UI
+        function updateLinkIndicators() {
+            // Remove active class from all links
+            document.querySelectorAll('.link-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to current link
+            document.getElementById(`link-${currentLinkIndex + 1}`).classList.add('active');
+        }
+        
+        // Detect operating system with distinction between Android and desktop Linux
+        function detectOS() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            
+            // Check for Android first
+            if (userAgent.indexOf('android') !== -1) {
+                return 'Android';
+            }
+            
+            // Check for Linux (but not Android)
+            if (userAgent.indexOf('linux') !== -1 && userAgent.indexOf('android') === -1) {
+                return 'Linux';
+            }
+            
+            // Other OS detection
+            if (userAgent.indexOf('win') !== -1) return 'Windows';
+            if (userAgent.indexOf('mac') !== -1) return 'macOS';
+            if (userAgent.indexOf('x11') !== -1) return 'UNIX';
+            
+            return 'Unknown';
+        }
+        
+        // Update UI with OS and user agent info
+        function updateUI() {
+            const os = detectOS();
+            document.getElementById('os-info').textContent = os;
+            document.getElementById('original-ua').textContent = navigator.userAgent.substring(0, 50) + '...';
+            
+            // Generate and display the Facebook user agent
+            currentUserAgent = generateFacebookUserAgent();
+            document.getElementById('simulated-ua').textContent = currentUserAgent.substring(0, 60) + '...';
+            document.getElementById('current-device').textContent = currentDevice;
+            document.getElementById('current-link').textContent = getCurrentUrlName();
+            
+            // Update link indicators
+            updateLinkIndicators();
+            
+            // If OS is Linux (desktop), show error message and don't load content
+            if (os === 'Linux') {
+                document.getElementById('error-message').style.display = 'block';
+                document.querySelector('.iframe-container').style.display = 'none';
+                document.querySelector('.refresh-timer').style.display = 'none';
+                document.querySelector('.controls').style.display = 'none';
+                document.querySelector('.links-container').style.display = 'none';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Load content with Facebook user agent simulation
+        function loadContent() {
+            const frame = document.getElementById('content-frame');
+            const loading = document.getElementById('loading');
+            
+            // Show loading indicator
+            loading.style.display = 'block';
+            frame.style.display = 'none';
+            
+            // Load the current URL
+            frame.src = getCurrentUrl();
+            
+            // Hide loading indicator and show frame after a delay
+            setTimeout(() => {
+                loading.style.display = 'none';
+                frame.style.display = 'block';
+            }, 2000);
+        }
+        
+        // Auto-scroll functionality
+        function startAutoScroll() {
+            scrollInterval = setInterval(() => {
+                if (isScrollActive) {
+                    // Calculate scroll step based on direction
+                    const scrollStep = 2 * scrollDirection;
+                    
+                    // Update scroll position
+                    scrollPosition += scrollStep;
+                    
+                    // Scroll the main window
+                    window.scrollBy(0, scrollStep);
+                    
+                    // Try to scroll the iframe content (may not work due to cross-origin restrictions)
+                    try {
+                        const frame = document.getElementById('content-frame');
+                        if (frame.contentWindow) {
+                            frame.contentWindow.scrollBy(0, scrollStep);
+                        }
+                    } catch (e) {
+                        // Cross-origin restriction, ignore
+                    }
+                    
+                    // Check if we need to change direction
+                    const documentHeight = document.documentElement.scrollHeight;
+                    const windowHeight = window.innerHeight;
+                    
+                    if (scrollPosition >= documentHeight - windowHeight - 10) {
+                        scrollDirection = -1; // Change to scroll up
+                        document.getElementById('scroll-direction').textContent = 'Up';
+                    } else if (scrollPosition <= 10) {
+                        scrollDirection = 1; // Change to scroll down
+                        document.getElementById('scroll-direction').textContent = 'Down';
+                    }
+                }
+            }, 50); // Scroll every 50ms for smooth scrolling
+        }
+        
+        // Timer for automatic refresh
+        function startTimer() {
+            countdown = 10;
+            document.getElementById('timer').textContent = countdown;
+            document.getElementById('seconds').textContent = countdown;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(() => {
+                if (isTimerActive) {
+                    countdown--;
+                    document.getElementById('timer').textContent = countdown;
+                    document.getElementById('seconds').textContent = countdown;
+                    
+                    if (countdown <= 0) {
+                        refreshPage();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function refreshPage() {
+            // Move to the next link
+            nextLink();
+            
+            // Generate a new random user agent on refresh
+            currentUserAgent = generateFacebookUserAgent();
+            document.getElementById('simulated-ua').textContent = currentUserAgent.substring(0, 60) + '...';
+            document.getElementById('current-device').textContent = currentDevice;
+            
+            // Reload the content
+            loadContent();
+            
+            // Restart the timer
+            startTimer();
+        }
+        
+        // Toggle timer on/off
+        function toggleTimer() {
+            isTimerActive = !isTimerActive;
+            const button = document.getElementById('toggle-timer');
+            
+            if (isTimerActive) {
+                button.textContent = 'Pause Timer';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-secondary');
+            } else {
+                button.textContent = 'Resume Timer';
+                button.classList.remove('btn-secondary');
+                button.classList.add('btn-primary');
+            }
+        }
+        
+        // Toggle auto-scroll on/off
+        function toggleScroll() {
+            isScrollActive = !isScrollActive;
+            const button = document.getElementById('toggle-scroll');
+            const status = document.getElementById('scroll-status');
+            
+            if (isScrollActive) {
+                button.textContent = 'Pause Auto-Scroll';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-tertiary');
+                status.textContent = 'Active';
+            } else {
+                button.textContent = 'Resume Auto-Scroll';
+                button.classList.remove('btn-tertiary');
+                button.classList.add('btn-primary');
+                status.textContent = 'Paused';
+            }
+        }
+        
+        // Manually go to the next link
+        function goToNextLink() {
+            nextLink();
+            loadContent();
+            startTimer();
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            const canLoad = updateUI();
+            
+            if (canLoad) {
+                loadContent();
+                startTimer();
+                startAutoScroll();
+            }
+            
+            // Event listeners for buttons
+            document.getElementById('refresh-btn').addEventListener('click', refreshPage);
+            document.getElementById('toggle-timer').addEventListener('click', toggleTimer);
+            document.getElementById('toggle-scroll').addEventListener('click', toggleScroll);
+            document.getElementById('next-link').addEventListener('click', goToNextLink);
+        });
+    </script>
+</body>
+</html>
